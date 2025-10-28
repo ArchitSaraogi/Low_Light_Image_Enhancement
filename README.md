@@ -7,5 +7,5 @@ inspired by the LIME (Low-Light Image Enhancement) paper. The code includes func
 ## Installation
 - Clone the repository:
   ```
-  git clone https://github.com/garvit5555/Low_light_img_enhancement.git
-  cd Low_light_img_enhancement
+  git clone https://github.com/ArchitSaraogi/Low_Light_Image_Enhancement.git
+  cd Low_Light_Image_Enhancement
