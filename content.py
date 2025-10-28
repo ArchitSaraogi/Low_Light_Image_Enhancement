@@ -5,29 +5,17 @@ from scipy.sparse import diags, csr_matrix, identity,lil_matrix
 from scipy.sparse.linalg import spsolve
 from bm3d import bm3d
 from typing import Union,Tuple
-
+from skimage.restoration import denoise_tv_chambolle
 
 def bool_image(file_name: str) -> bool:
-    """Checks if a file is of 'bmp', 'jpg', 'png' or 'tif' format.
-
-    Returns True if a file name ends with any of these formats, and False otherwise.
-    """
     bool_value = file_name[-3:] in ['bmp', 'jpg', 'png', 'tif']
     return bool_value
 
 
 def brightness_adjust(ill_map: np.ndarray, brightness: Union[int, float]) -> np.ndarray:
-    """Adjusts the brightness of the illumination map by adding a constant.
-
-    Returns the shape-(M, N) adjusted illumination map array.
-    """
     return ill_map + brightness
 
 def gradient_matrices(illumination_map: np.ndarray) -> Tuple[csr_matrix, csr_matrix]:
-    """Generates sparse gradient matrices for computing forward differences in both horizontal and vertical directions.
-
-    Returns the gradient matrices in Compressed Sparse Row (CSR) format.
-    """
     image_size = illumination_map.size
     image_x_shape = illumination_map.shape[-1]
     
@@ -85,9 +73,6 @@ def initialize_weights(ill_map: np.ndarray, strategy_n: int, epsilon: float = 0.
 
 
 def optimize_illumination_map(ill_map: np.ndarray, weight_strategy: int = 3) -> np.ndarray:
-    """Updates the initial illumination map according to a sped-up solver of the original LIME paper.
-    Returns the shape-(M, N) updated illumination map array.
-    """
     vectorized_t = ill_map.reshape((ill_map.size, 1))
     epsilon = 0.001
     alpha = 0.15
@@ -108,14 +93,8 @@ def optimize_illumination_map(ill_map: np.ndarray, weight_strategy: int = 3) -> 
     return updated_t.reshape(ill_map.shape)
 
 
-from skimage.restoration import denoise_tv_chambolle
+
 def denoising_tv(image: np.ndarray, cor_ill_map: np.ndarray, weight: float = 0.1) -> np.ndarray:
-    # Perform TV denoising
     denoised_image = denoise_tv_chambolle(image, weight=weight)
-    
-    # Combine the corrected illumination map with the denoised image
-    recombined_image = image * cor_ill_map + denoised_image * (1 - cor_ill_map)
-    
-    # Clip the result to ensure values are in the range [0, 1] and return as float32
     return np.clip(recombined_image, 0, 1).astype("float32")
 
